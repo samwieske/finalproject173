@@ -1,39 +1,36 @@
-#Connect to folder
+#Define working directory
+#folder_path = GetParameterAsText(0)
 folder_path = r'C:\Users\samwieske\Desktop\folderpath'
 
-#import the many modules I will be using 
+#Import Libraries
 import arcpy
 import math
 import os
 from arcpy.sa import *
 
-# Define workspace as your folder path 
+#Set workspace as your folder path and allow overwrite
 arcpy.env.workspace = folder_path
-# Allow overwriting output files
 arcpy.env.overwriteOutput = True
 
 #Define Inputs
-#Vector data of cities or regions for buffer analysis
-
-#Places = GetParameterAsText(0)
+#Places: City Shapefile
+#Places = GetParameterAsText(1)
 Places = r"C:\Users\samwieske\Desktop\folderpath\ne_10m_populated_places.shp"
 
-#Raster DEM data for elevation analysis
-#Region = GetParameterAsText(1)
+#Region: Landsat Raster of Los Angeles
+#Region = GetParameterAsText(2)
 Region = folder_path + "\LC08_L1TP_041036_20191021_20191030_01_T1_B1.tif"
 
 
+#Step 1: Clip Places to Region
 
-#Step 1. Clip Places to Region
-
-#Define raster extent output
+#Define output shapefile for the raster's polygon boundary
 rasPoly = r"C:\Users\samwieske\Desktop\folderpath\rasterpoly.shp"
 
-#The raster datasets in the input workspace
+#List of raster datasets in the input workspace
 in_raster_datasets = arcpy.ListRasters()
 
-#sr = arcpy.SpatialReference(r"C:\Users\Fuaad Khan\Desktop\Lab3\LabData\LabData.mdx")
-#Create a Polygon Feature Class
+#Create a polygon feature class for raster boundary
 arcpy.CreateFeatureclass_management(os.path.dirname(rasPoly),os.path.basename(rasPoly),"POLYGON", spatial_reference = Region)
                                     
 arcpy.AddField_management(rasPoly,"RasterName", "String","","",250)
@@ -60,7 +57,7 @@ for Ras in in_raster_datasets:
 del feat
 del cursor 
 
-                                                                   
+print("RasterPoly Created...")                                                                   
 #Run Clip Analysis
 
 in_features = Places
@@ -69,9 +66,9 @@ clipCity = "clipCities.shp"
 
 arcpy.Clip_analysis(in_features, clip_features, clipCity)                                    
                                     
-                                    
-#Step 2. Define Raster values
-    #2A. Create NDVI to determine a vegetation scale
+print("Cities Clipped...")                                    
+#Step 2: Define Raster values
+    #2A: Create NDVI to determine a vegetation scale
                                     
 if arcpy.CheckOutExtension("Spatial") == "CheckedOut":
 	RedBandF=arcpy.Raster(folder_path + '\LC08_L1TP_041036_20191021_20191030_01_T1_B4.tif')
@@ -83,12 +80,18 @@ if arcpy.CheckOutExtension("Spatial") == "CheckedOut":
 	output_raster = (InfraredBand - RedBand) / (RedBand + InfraredBand) #NDVI calculation
 	output_raster.save("NDVI.TIF")
 
-print "NDVI raster has been successfully computed."
+print("NDVI raster has been successfully computed.")
                                     
 
 
-#Step 4. Buffer around cities
+#Step 4: 5 mile Buffer around cities and Clip Raster to Buffer Mask
+cityBuffer = "clipCities_Buffer.shp"
+arcpy.Buffer_analysis(ClipCity, cityBuffer, "5 Miles")
+print("Buffer Created...")
 
-#Step 5. Need Austin's help
+arcpy.gp.ExtractByMask_sa("NDVI.TIF", cityBuffer)
+print("Raster Mask Extracted...")
 
-#Step 6. Use an update cursor to 
+print(">> End of Script <<")
+#Step 5: Zonal statistics on extracted masks
+#Step 6: Use an update cursor to add stats to clipped cities shapefile 
