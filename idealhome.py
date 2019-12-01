@@ -168,7 +168,7 @@ for x in Mean:
         meanScore.append(2)
     elif (x[0] >= 0.116 and x[0] <= 0.17):
         meanScore.append(3)
-    elif (x[0] >= 0.17):
+    elif (x[0] >= 0.171):
         meanScore.append(4)
         print "Done."
         
