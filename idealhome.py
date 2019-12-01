@@ -144,6 +144,16 @@ elif desc.shapeType == "Polygon":
 else:
     print ("Invalid Input, shape type is: "+desc.shapeType(Places))
 
+arcpy.AddField_management("NDVITable.dbf", "NumBus", "FLOAT")
+arcpy.AddField_management("NDVITable.dbf", "NumSchools", "FLOAT")
+arcpy.AddField_management("NDVITable.dbf", "FinalScore", "FLOAT")
+
+arcpy.CalculateField_management("NDVITable.dbf", "NumBus", "!FREQUENCY! - 1","PYTHON")
+arcpy.CalculateField_management("NDVITable.dbf", "NumSchools", "!FREQUENC_1! - 1","PYTHON")
+
+arcpy.DeleteField_management("NDVITable.dbf", "FREQUENCY")
+arcpy.DeleteField_management("NDVITable.dbf", "FREQUENC_1")
+
 print(">> End of Script <<")
 
 
