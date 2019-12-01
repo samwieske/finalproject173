@@ -154,6 +154,25 @@ arcpy.CalculateField_management("NDVITable.dbf", "NumSchools", "!FREQUENC_1! - 1
 arcpy.DeleteField_management("NDVITable.dbf", "FREQUENCY")
 arcpy.DeleteField_management("NDVITable.dbf", "FREQUENC_1")
 
+arcpy.AddField_management("NDVITable.dbf", "BusScore", "FLOAT")
+arcpy.AddField_management("NDVITable.dbf", "MeanScore", "FLOAT")
+arcpy.AddField_management("NDVITable.dbf", "SchoolScore", "FLOAT")
+arcpy.AddField_management("NDVITable.dbf", "FinalScore", "FLOAT")
+
+meanScore=arcpy.da.InsertCursor("NDVITable.dbf", ("MeanScore"))
+Mean=arcpy.da.SearchCursor("NDVITable.dbf", ("MEAN"))
+for x in Mean:
+    if (x[0] >= 0.0 and x[0] <= 0.06):
+        meanScore.append(1)
+    elif (x[0] >= 0.061 and x[0] <= 0.115):
+        meanScore.append(2)
+    elif (x[0] >= 0.116 and x[0] <= 0.17):
+        meanScore.append(3)
+    elif (x[0] >= 0.17):
+        meanScore.append(4)
+        print "Done."
+        
+
 print(">> End of Script <<")
 
 
